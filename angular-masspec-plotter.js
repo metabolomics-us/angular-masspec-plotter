@@ -11,7 +11,7 @@ angular.module('angularMasspecPlotter', [])
 
             replace: 'true',
             template:
-                '<div style="width: 100%; display: inline-block;">'+
+                '<div style="width: 100%; height: 100%; display: inline-block;">'+
                 '<div class="masspec" style="width: 100%; height: 100%"></div>'+
                 // Unable to plot multiple mass specs with different states due to scope issues
                 //'<div ng-bind="masspecLabel" style="text-align: center; font-style: oblique;"></div>'+
@@ -48,6 +48,7 @@ angular.module('angularMasspecPlotter', [])
                         }
                     },
                     grid: {
+                        labelMargin: 10,
                         backgroundColor: '#fff',
                         color: '#e2e6e9',
                         borderColor: null
@@ -57,7 +58,7 @@ angular.module('angularMasspecPlotter', [])
 
                 // Format plot if a thumbnail version is desired
                 if(miniPlot) {
-                    options.xaxis = { ticks: false, min: 0, max: 500 };
+                    options.xaxis = { ticks: false, min: 0, max: 1000 };
                     options.yaxis = { ticks: false };
 
                     // Filter low intensity peaks
