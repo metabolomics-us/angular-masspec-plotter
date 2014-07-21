@@ -3,6 +3,9 @@ angular.module('angularMasspecPlotter', [])
         return {
             restrict: 'E',
             require: 'ngModel',
+            scope:{
+                bindModel: '=ngModel'
+            },
 
             priority: 1,
 
@@ -16,7 +19,7 @@ angular.module('angularMasspecPlotter', [])
 
             link: function (scope, element, attrs) {
                 // Retrieve the data
-                var data = scope[attrs.ngModel];
+                var data = scope.bindModel;
 
                 // Parse data if it is in the standard string format
                 if(typeof data === 'string') {
