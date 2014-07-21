@@ -1,0 +1,59 @@
+<html ng-app="app">
+	<head>
+        <title>Angular Masspec Plotter</title>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+        <style type='text/css'>
+			.masspec .button {
+				position: absolute;
+				cursor: pointer;
+			}
+
+			.masspec div.button {
+				font-size: smaller;
+				color: #999;
+				background-color: #eee;
+				padding: 2px;
+			}
+        </style>
+	</head>
+
+	<body ng-controller="PlotController">
+		<h1>Angular Masspec Plotter</h1>
+
+
+		<h3>Full Mass Spectrum</h3>
+		<div style="width: 50%; height: 400px">
+		    <mass-spec ng-model="data"></mass-spec>
+		</div>
+
+		<h3>"Mini" (Thumbnail) Mass Spectrum</h3>
+		<div style="width: 100px; height: 100px">
+		    <mass-spec mini ng-model="data"></mass-spec>
+		</div>
+
+
+		<script src="bower_components/angular/angular.min.js"></script>
+		<script src="bower_components/jquery/dist/jquery.min.js"></script>
+		<script src="bower_components/flot/jquery.flot.js"></script>
+		<script src="bower_components/flot/jquery.flot.tooltip.js"></script>
+		<script src="bower_components/flot/jquery.flot.navigate.js"></script>
+		<script src="angular-masspec-plotter.js"></script>
+        <script type="text/javascript">
+            //<![CDATA[
+
+            angular.module('app', ['angularMasspecPlotter'])
+			    .controller("PlotController", function ($scope) {
+			        $scope.data = [
+			            [
+			                [12, 125], [13, 131], [14, 999], [15, 12], [16, 10], [20, 1], [21, 18],
+			                [24, 44], [25, 58], [26, 16], [27, 1], [28, 113], [29, 68], [30, 1],
+			                [40, 51], [41, 265], [42, 939], [43, 21], [44, 1]
+			            ]
+			        ];
+			    });
+
+            //]]>
+        </script>
+	</body>
+</html>
