@@ -23,14 +23,14 @@ angular.module('angularMasspecPlotter', [])
 
                 // Parse data if it is in the standard string format
                 if(typeof data === 'string') {
-                    data = [ data.split(' ').map(function(x) { return x.split(':').map(Number) }) ];
+                    data = data.split(' ').map(function(x) { return x.split(':').map(Number) });
                 }
 
 
                 // Compute plot limits
-                var mz_min = Math.min.apply(Math, data[0].map(function(x) { return x[0]; }));
-                var mz_max = Math.max.apply(Math, data[0].map(function(x) { return x[0]; }));
-                var intensity_max = Math.max.apply(Math, data[0].map(function(x) { return x[1]; }));
+                var mz_min = Math.min.apply(Math, data.map(function(x) { return x[0]; }));
+                var mz_max = Math.max.apply(Math, data.map(function(x) { return x[0]; }));
+                var intensity_max = Math.max.apply(Math, data.map(function(x) { return x[1]; }));
 
 
                 // Type of plot
@@ -48,50 +48,29 @@ angular.module('angularMasspecPlotter', [])
                         }
                     },
                     grid: {
-                        labelMargin: 10,
+                        labelMargin: 15,
+
                         backgroundColor: '#fff',
                         color: '#e2e6e9',
                         borderColor: null
-                    }
+                    },
+                    xaxis: { min: 0, max: mz_max },
+                    yaxis: { min: 0, max: 1.25 * intensity_max }
                 };
 
 
                 // Format plot if a thumbnail version is desired
                 if(miniPlot) {
                     options.xaxis = { ticks: false, min: 0, max: 1000 };
-                    options.yaxis = { ticks: false };
+                    options.yaxis = { ticks: false, min: 0, max: 1.25 * intensity_max };
 
                     // Filter low intensity peaks
-                    data = data.filter(function(x) { return x[0][1] > 0.05 * intensity_max });
-                }
-
-                // Otherwise, enable interactivity
-                else {
-                    options.xaxis = {
-                        zoomRange: [mz_min, mz_max],
-                        panRange: [mz_min, mz_max]
-                    }
-                    options.yaxis = {
-                        zoomRange: [0, 1.25 * intensity_max],
-                        panRange: [0, 1.25 * intensity_max]
-                    }
-                    options.zoom = { interactive: true };
-                    options.pan = { interactive: true };
+                    data = data.filter(function(x) { return x[1] > 0.05 * intensity_max });
                 }
 
                 // Plot
                 var placeholder = $(element).find(".masspec");
-
-                var plot = $.plot(placeholder, data, options);
-
-                if(!miniPlot) {
-                    $('<div class="button" style="right: 20px; top: 20px">Reset Zoom</div>')
-                        .appendTo(placeholder)
-                        .click(function (event) {
-                            event.preventDefault();
-                            plot.zoomOut();
-                    });
-                }
+                var plot = $.plot(placeholder, [data], options);
             }
         }
     });
