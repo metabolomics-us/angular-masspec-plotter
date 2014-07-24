@@ -54,7 +54,7 @@ angular.module('angularMasspecPlotter', [])
                         color: '#e2e6e9',
                         borderColor: null
                     },
-                    xaxis: { min: 0, max: mz_max },
+                    xaxis: { min: 0, max: Math.max(mz_max, 1000) },
                     yaxis: { min: 0, max: 1.25 * intensity_max }
                 };
 
