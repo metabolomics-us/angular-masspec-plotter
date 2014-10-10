@@ -44,7 +44,7 @@ angular.module('angularMasspecPlotter', [])
                             maxLocalIntensity = data[i][1];
                     }
 
-                    return maxLocalIntensity;
+                    return Math.max(maxLocalIntensity, 10);
                 }
 
 
@@ -68,11 +68,13 @@ angular.module('angularMasspecPlotter', [])
 
                         backgroundColor: '#fff',
                         color: '#e2e6e9',
+
+                        borderWidth: {top: 0, right: 0, bottom: 1, left: 1},
                         borderColor: null
                     },
 
                     xaxis: { min: 0, max: Math.max(mzMax, 1000) },
-                    yaxis: { min: 0, max: 1.25 * intensityMax },
+                    yaxis: { min: 0, max: 1.15 * intensityMax },
 
                     legend: {show: false}
                 };
@@ -80,14 +82,12 @@ angular.module('angularMasspecPlotter', [])
 
                 // Format plot if a thumbnail version is desired
                 if(miniPlot) {
-                    // Remove tick labels, redefine axis maxima and remove border
+                    // Remove tick labels, redefine axis maxima
                     options.xaxis.ticks = false;
                     options.yaxis.ticks = false;
 
                     options.xaxis.max = 1000;
                     options.yaxis.max = intensityMax;
-
-                    options.grid.show = false;
 
                     // Filter low intensity peaks
                     data = data.filter(function(x) { return x[1] > 0.05 * intensityMax });
@@ -134,7 +134,7 @@ angular.module('angularMasspecPlotter', [])
                             // Reset y-axis range
                             $.each(plot.getYAxes(), function(_, axis) {
                                 axis.options.min = 0;
-                                axis.options.max = 1.25 * intensityMax;
+                                axis.options.max = 1.15 * intensityMax;
                             });
 
                             // Redraw plot
@@ -157,7 +157,7 @@ angular.module('angularMasspecPlotter', [])
                         // Set y-axis range
                         $.each(plot.getYAxes(), function(_, axis) {
                             axis.options.min = 0;
-                            axis.options.max = 1.25 * maxLocalIntensity;
+                            axis.options.max = 1.15 * maxLocalIntensity;
                         });
 
                         // Redraw plot
