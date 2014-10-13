@@ -20,7 +20,6 @@
         "angular": "^1.0.8",
         "angular-sanitize": "^1.0.8",
         "jquery": "^1.11.0",
-        "flot": "~0.8.3",
-        "flot.tooltip": "~0.8.4"
+        "flot": "~0.8.3"
     }
 }

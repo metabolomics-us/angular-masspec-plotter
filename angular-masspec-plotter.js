@@ -38,11 +38,13 @@ angular.module('angularMasspecPlotter', [])
                 /**
                  * Find the n ions with the highest intensity in the given range
                  */
-                function getTopPeaks(data, min, max, n) {
+                function getTopPeaks(data, n) {
                     // Set default values if not given
-                    min = typeof min !== 'undefined' ? min : 0;
-                    max = typeof max !== 'undefined' ? max : data[data.length - 1][0];
                     n = typeof n !== 'undefined' ? n : 3;
+
+                    // Get plot minimum and maximum
+                    var min = plot.getXAxes()[0].options.min;
+                    var max = plot.getXAxes()[0].options.max;
 
                     // Get data within range
                     reducedData = [];
@@ -59,6 +61,29 @@ angular.module('angularMasspecPlotter', [])
 
                     // Return the top n hits
                     return reducedData.slice(0, n);
+                }
+
+                /**
+                 * Add annotations for the top n ions
+                 */
+                function plotAnnotations(data, n) {
+                    // Get peaks
+                    var peaks = getTopPeaks(data, n);
+
+                    // Remove all annotation elements
+                    $(".masspec-annotation").remove();
+
+                    // Add annotations
+                    for(var i = 0; i < peaks.length; i++) {
+                        var p = plot.pointOffset({x: peaks[i][0], y: peaks[i][1]});
+
+                        $('<div class="masspec-annotation">'+ peaks[i][0] +"</div>").css({
+                            'position': 'absolute',
+                            'left': p.left - 12,
+                            'top': p.top - 12,
+                            'font-size': 'x-small'
+                        }).appendTo(placeholder);
+                    }
                 }
 
 
@@ -147,6 +172,9 @@ angular.module('angularMasspecPlotter', [])
 
                 // Set up interactivity if this is a full plot
                 if(!miniPlot) {
+                    // Plot annotations
+                    plotAnnotations(data);
+
                     // Define selection zoom functionality
                     placeholder.bind('plotselected', function(event, range) {
                         // Get maximum intensity in given range
@@ -168,6 +196,7 @@ angular.module('angularMasspecPlotter', [])
                         plot.setupGrid();
                         plot.draw();
                         plot.clearSelection();
+                        plotAnnotations(data);
                     });
 
                     // Add button to reset selection zooming
@@ -197,6 +226,7 @@ angular.module('angularMasspecPlotter', [])
                         plot.setupGrid();
                         plot.draw();
                         plot.clearSelection();
+                        plotAnnotations(data);
                     });
 
                     // Define functionality for plot hover / tooltips
@@ -204,7 +234,7 @@ angular.module('angularMasspecPlotter', [])
                         function showTooltip(contents) {
                             $('canvas').css('cursor', 'pointer');
 
-                            $('<div id="maspec-tooltip">'+ contents +'</div>').css({
+                            $('<div id="masspec-tooltip">'+ contents +'</div>').css({
                                 'position': 'absolute',
                                 'top': pos.pageY + 5,
                                 'left': pos.pageX + 5,
@@ -220,7 +250,7 @@ angular.module('angularMasspecPlotter', [])
 
 
                         // Remove current tooltip and highlight
-                        $("#maspec-tooltip").remove();
+                        $("#masspec-tooltip").remove();
                         $('canvas').css('cursor', 'auto');
                         plot.unhighlight();
 
