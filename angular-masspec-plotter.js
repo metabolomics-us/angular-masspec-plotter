@@ -77,14 +77,19 @@ angular.module('angularMasspecPlotter', [])
                     for(var i = 0; i < peaks.length; i++) {
                         var p = plot.pointOffset({x: peaks[i][0], y: peaks[i][1]});
 
-                        $('<div class="masspec-annotation">'+ peaks[i][0] +"</div>").css({
+                        // Place annotation and then reposition to center on ion
+                        var annotation = $('<div class="masspec-annotation">'+ peaks[i][0] +"</div>").css({
                             'position': 'absolute',
-                            'left': p.left - 12,
                             'top': p.top - 12,
                             'font-size': 'x-small',
                             'color': '#f00',
                             'text-align': 'center'
-                        }).appendTo(placeholder);
+                        });
+                        annotation.appendTo(placeholder);
+                        annotation.css({
+                            'left': p.left - annotation.width() / 2
+                        });
+
                     }
                 }
 
@@ -203,8 +208,10 @@ angular.module('angularMasspecPlotter', [])
                     });
 
                     // Add button to reset selection zooming
-                    $('<div class="button" style="right: 20px; top: 20px">Reset Zoom</div>').css({
+                    $('<div class="button" style=" ">Reset Zoom</div>').css({
                         'position': 'absolute',
+                        'top': '10px',
+                        'right': '10px',
                         'cursor': 'pointer',
                         'font-size': 'smaller',
                         'color': '#999',
@@ -237,10 +244,12 @@ angular.module('angularMasspecPlotter', [])
                         function showTooltip(contents) {
                             $('canvas').css('cursor', 'pointer');
 
+                            var p = plot.pointOffset({x: pos.x, y: pos.y});
+
                             $('<div id="masspec-tooltip">'+ contents +'</div>').css({
                                 'position': 'absolute',
-                                'top': pos.pageY + 5,
-                                'left': pos.pageX + 5,
+                                'top': p.top + 5,
+                                'left': p.left + 5,
                                 'font-size': 'smaller',
                                 'background': '#fff',
                                 'z-index': '1040',
@@ -248,7 +257,7 @@ angular.module('angularMasspecPlotter', [])
                                 'border-radius': '0.5em',
                                 'border': '1px solid #111',
                                 'white-space': 'nowrap'
-                            }).appendTo('body');
+                            }).appendTo(placeholder);
                         }
 
 

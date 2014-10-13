@@ -6,8 +6,8 @@ AngularJS module for plotting mass spectra with [Flot](http://www.flotcharts.org
 
 * Quick summary
 
-Just inject it as service and you are ready togo. 
+Just inject it as service and you are ready togo.
 
 install:
 
-bower install https://wohlgemuth@bitbucket.org/fiehnlab/angular-massbank-parser.git
+bower install https://wohlgemuth@bitbucket.org/fiehnlab/angular-masspec-plotter.git
