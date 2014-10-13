@@ -81,7 +81,9 @@ angular.module('angularMasspecPlotter', [])
                             'position': 'absolute',
                             'left': p.left - 12,
                             'top': p.top - 12,
-                            'font-size': 'x-small'
+                            'font-size': 'x-small',
+                            'color': '#f00',
+                            'text-align': 'center'
                         }).appendTo(placeholder);
                     }
                 }
@@ -113,7 +115,8 @@ angular.module('angularMasspecPlotter', [])
                 var options = {
                     series: {
                         color: '#00f',
-                        lines: { show: true }
+                        lines: { show: true },
+                        shadowSize: 0
                     },
 
                     grid: {
@@ -279,6 +282,11 @@ angular.module('angularMasspecPlotter', [])
                             if(nearestIon.dist != -1 && nearestIon.dist < plot.getOptions().grid.mouseActiveRadius)
                                 showTooltip('m/z = '+ nearestIon.datapoint[0] +'<br />abundance = '+ nearestIon.datapoint[1]);
                         }
+                    });
+
+                    // Replot annotations when window is resized
+                    placeholder.resize(function() {
+                        plotAnnotations(data);
                     });
                 }
             }
