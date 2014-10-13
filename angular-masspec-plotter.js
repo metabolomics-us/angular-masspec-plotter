@@ -208,7 +208,7 @@ angular.module('angularMasspecPlotter', [])
                     });
 
                     // Add button to reset selection zooming
-                    $('<div class="button" style=" ">Reset Zoom</div>').css({
+                    $('<div class="button">Reset Zoom</div>').css({
                         'position': 'absolute',
                         'top': '10px',
                         'right': '10px',
@@ -279,9 +279,11 @@ angular.module('angularMasspecPlotter', [])
                             }
 
                             $.each(data, function(i, x) {
+                                var p = plot.pointOffset({x: x[0], y: x[1]});
+
                                 if(nearestIon.dist == -1 ||
-                                        (Math.abs(x[0] - pos.x) < nearestIon.dist && pos.y > 0 && pos.y < x[1])) {
-                                    nearestIon.dist = Math.abs(x[0] - pos.x);
+                                        (Math.abs(p.left - pos.pageX) < nearestIon.dist && pos.y > 0 && pos.y < x[1])) {
+                                    nearestIon.dist = Math.abs(p.left - pos.pageX);
                                     nearestIon.i = i;
                                     nearestIon.datapoint = x;
                                 }
