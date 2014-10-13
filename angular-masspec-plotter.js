@@ -278,12 +278,14 @@ angular.module('angularMasspecPlotter', [])
                                 dist: -1
                             }
 
+                            var cursor = plot.pointOffset({x: pos.x, y: pos.y});
+
                             $.each(data, function(i, x) {
                                 var p = plot.pointOffset({x: x[0], y: x[1]});
 
                                 if(nearestIon.dist == -1 ||
-                                        (Math.abs(p.left - pos.pageX) < nearestIon.dist && pos.y > 0 && pos.y < x[1])) {
-                                    nearestIon.dist = Math.abs(p.left - pos.pageX);
+                                        (Math.abs(p.left - cursor.left) < nearestIon.dist && pos.y > 0 && pos.y < x[1])) {
+                                    nearestIon.dist = Math.abs(p.left - cursor.left);
                                     nearestIon.i = i;
                                     nearestIon.datapoint = x;
                                 }
