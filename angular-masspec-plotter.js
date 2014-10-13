@@ -18,21 +18,9 @@ angular.module('angularMasspecPlotter', [])
                 '</div>',
 
             link: function (scope, element, attrs) {
-                // Retrieve the data
-                var data = scope.bindModel;
-
-                // Parse data if it is in the standard string format
-                if(typeof data === 'string') {
-                    data = data.split(' ').map(function(x) {
-                        return x.split(':').map(Number);
-                    });
-                }
-
-
-                // Compute plot limits
-                var mzMax = Math.max.apply(Math, data.map(function(x) { return x[0]; }));
-                var intensityMax = Math.max.apply(Math, data.map(function(x) { return x[1]; }));
-
+                /**
+                 * Find the maximum intensity in the given range
+                 */
                 function maxIntensityInRange(min, max) {
                     var maxLocalIntensity = 0;
 
@@ -47,6 +35,50 @@ angular.module('angularMasspecPlotter', [])
                     return Math.max(maxLocalIntensity, 10);
                 }
 
+                /**
+                 * Find the n ions with the highest intensity in the given range
+                 */
+                function getTopPeaks(data, min, max, n) {
+                    // Set default values if not given
+                    min = typeof min !== 'undefined' ? min : 0;
+                    max = typeof max !== 'undefined' ? max : data[data.length - 1][0];
+                    n = typeof n !== 'undefined' ? n : 3;
+
+                    // Get data within range
+                    reducedData = [];
+
+                    for(var i = 0; i < data.length; i++) {
+                        if(min <= data[i][0] && data[i][0] <= max)
+                            reducedData.push(data[i]);
+                    }
+
+                    // Sort data
+                    reducedData.sort(function(a, b) {
+                        return b[1] - a[1];
+                    });
+
+                    // Return the top n hits
+                    return reducedData.slice(0, n);
+                }
+
+
+
+                // Retrieve the data
+                var data = scope.bindModel;
+
+                // Parse data if it is in the standard string format
+                if(typeof data === 'string') {
+                    data = data.split(' ').map(function(x) {
+                        return x.split(':').map(Number);
+                    });
+                }
+
+
+
+                // Compute plot limits
+                var mzMax = Math.max.apply(Math, data.map(function(x) { return x[0]; }));
+                var intensityMax = Math.max.apply(Math, data.map(function(x) { return x[1]; }));
+
 
                 // Type of plot
                 var miniPlot = ('mini' in attrs)
@@ -56,11 +88,7 @@ angular.module('angularMasspecPlotter', [])
                 var options = {
                     series: {
                         color: '#00f',
-                        bars: {
-                            show: true,
-                            barWidth: 0.00001,
-                            align: "center"
-                        }
+                        lines: { show: true }
                     },
 
                     grid: {
@@ -78,6 +106,7 @@ angular.module('angularMasspecPlotter', [])
 
                     legend: {show: false}
                 };
+
 
 
                 // Format plot if a thumbnail version is desired
@@ -99,60 +128,35 @@ angular.module('angularMasspecPlotter', [])
                         mode: 'x'
                     };
 
-                    // options.tooltip = true;
-                    // options.tooltipOpts = {
-                    //     content: "<h4>%s</h4><ul><li>X is %x</li><li>Y is %y</li></ul>",
-                    //     shifts: {
-                    //         x: 10,
-                    //         y: 20
-                    //     },
-                    //     defaultTheme: false
-                    // };
+                    options.grid.hoverable = true;
+                    options.grid.mouseActiveRadius = 10;
                 }
 
 
+
                 // Find placeholder element and plot the mass spectrum
+                var plotData = [];
+
+                for(var i = 0; i < data.length; i++)
+                    plotData.push({ data: [[data[i][0], 0], data[i]], lines: { show: true } });
+
                 var placeholder = $(element).find(".masspec");
-                var plot = $.plot(placeholder, [data], options);
+                var plot = $.plot(placeholder, plotData, options);
+
 
 
                 // Set up interactivity if this is a full plot
                 if(!miniPlot) {
-                    // Add button to reset selection zooming
-                    $('<div class="button" style="right: 20px; top: 20px">Reset Zoom</div>')
-                        .appendTo(placeholder)
-                        .click(function (event) {
-                            event.preventDefault();
-                            console.log('test')
-
-                            // Reset x-axis range
-                            $.each(plot.getXAxes(), function(_, axis) {
-                                axis.options.min = 0;
-                                axis.options.max = Math.max(mzMax, 1000);
-                            });
-
-                            // Reset y-axis range
-                            $.each(plot.getYAxes(), function(_, axis) {
-                                axis.options.min = 0;
-                                axis.options.max = 1.15 * intensityMax;
-                            });
-
-                            // Redraw plot
-                            plot.setupGrid();
-                            plot.draw();
-                            plot.clearSelection();
-                        });
-
                     // Define selection zoom functionality
-            		placeholder.bind("plotselected", function(event, range) {
+                    placeholder.bind('plotselected', function(event, range) {
                         // Get maximum intensity in given range
                         var maxLocalIntensity = maxIntensityInRange(range.xaxis.from, range.xaxis.to);
 
                         // Set x-axis range
-            			$.each(plot.getXAxes(), function(_, axis) {
-            				axis.options.min = range.xaxis.from;
-            				axis.options.max = range.xaxis.to;
-            			});
+                        $.each(plot.getXAxes(), function(_, axis) {
+                            axis.options.min = range.xaxis.from;
+                            axis.options.max = range.xaxis.to;
+                        });
 
                         // Set y-axis range
                         $.each(plot.getYAxes(), function(_, axis) {
@@ -161,10 +165,91 @@ angular.module('angularMasspecPlotter', [])
                         });
 
                         // Redraw plot
-            			plot.setupGrid();
-            			plot.draw();
-            			plot.clearSelection();
-            		});
+                        plot.setupGrid();
+                        plot.draw();
+                        plot.clearSelection();
+                    });
+
+                    // Add button to reset selection zooming
+                    $('<div class="button" style="right: 20px; top: 20px">Reset Zoom</div>').css({
+                        'position': 'absolute',
+                        'cursor': 'pointer',
+                        'font-size': 'smaller',
+                        'color': '#999',
+                        'background-color': '#eee',
+                        'padding': '2px'
+                    }).appendTo(placeholder).click(function (event) {
+                        event.preventDefault();
+
+                        // Reset x-axis range
+                        $.each(plot.getXAxes(), function(_, axis) {
+                            axis.options.min = 0;
+                            axis.options.max = Math.max(mzMax, 1000);
+                        });
+
+                        // Reset y-axis range
+                        $.each(plot.getYAxes(), function(_, axis) {
+                            axis.options.min = 0;
+                            axis.options.max = 1.15 * intensityMax;
+                        });
+
+                        // Redraw plot
+                        plot.setupGrid();
+                        plot.draw();
+                        plot.clearSelection();
+                    });
+
+                    // Define functionality for plot hover / tooltips
+                    placeholder.bind('plothover', function (event, pos, item) {
+                        function showTooltip(contents) {
+                            $('canvas').css('cursor', 'pointer');
+
+                            $('<div id="maspec-tooltip">'+ contents +'</div>').css({
+                                'position': 'absolute',
+                                'top': pos.pageY + 5,
+                                'left': pos.pageX + 5,
+                                'font-size': 'smaller',
+                                'background': '#fff',
+                                'z-index': '1040',
+                                'padding': '0.4em 0.6em',
+                                'border-radius': '0.5em',
+                                'border': '1px solid #111',
+                                'white-space': 'nowrap'
+                            }).appendTo('body');
+                        }
+
+
+                        // Remove current tooltip and highlight
+                        $("#maspec-tooltip").remove();
+                        $('canvas').css('cursor', 'auto');
+                        plot.unhighlight();
+
+
+                        // If datapoint is selected, show the tooltip
+                        if(item)
+                            showTooltip('m/z = '+ item.datapoint[0] +'<br />abundance = '+ item.datapoint[1]);
+
+                        // Otherwise, check if line being hovered over
+                        else {
+                            // Find nearest ion
+                            var nearestIon = {
+                                dist: -1
+                            }
+
+                            $.each(data, function(i, x) {
+                                if(nearestIon.dist == -1 ||
+                                        (Math.abs(x[0] - pos.x) < nearestIon.dist && pos.y > 0 && pos.y < x[1])) {
+                                    nearestIon.dist = Math.abs(x[0] - pos.x);
+                                    nearestIon.i = i;
+                                    nearestIon.datapoint = x;
+                                }
+                            });
+
+                            // Set tooltip if we are near an ion peak
+                            if(nearestIon.dist != -1 && nearestIon.dist < plot.getOptions().grid.mouseActiveRadius)
+                                showTooltip('m/z = '+ nearestIon.datapoint[0] +'<br />abundance = '+ nearestIon.datapoint[1]);
+                        }
+                    });
                 }
             }
         }
