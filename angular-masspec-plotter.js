@@ -24,10 +24,7 @@ angular.module('angularMasspecPlotter', [])
                 function maxIntensityInRange(min, max) {
                     var maxLocalIntensity = 0;
 
-                    console.log(min +" "+ max);
-
                     for(var i = 0; i < data.length; i++) {
-                        console.log(maxLocalIntensity +" "+ data[i])
                         if(data[i][0] >= max)
                             break;
 
@@ -112,8 +109,6 @@ angular.module('angularMasspecPlotter', [])
                 data.sort(function(a, b) {
                     return a[0] - b[0];
                 });
-
-                console.log(data);
 
 
 
