@@ -24,11 +24,14 @@ angular.module('angularMasspecPlotter', [])
                 function maxIntensityInRange(min, max) {
                     var maxLocalIntensity = 0;
 
+                    console.log(min +" "+ max);
+
                     for(var i = 0; i < data.length; i++) {
+                        console.log(maxLocalIntensity +" "+ data[i])
                         if(data[i][0] >= max)
                             break;
 
-                        else if(data[i][0] >= min && data[i][1] >= maxLocalIntensity)
+                        else if(data[i][0] >= min && data[i][1] >= maxLocalIntensity) 
                             maxLocalIntensity = data[i][1];
                     }
 
@@ -104,6 +107,13 @@ angular.module('angularMasspecPlotter', [])
                         return x.split(':').map(Number);
                     });
                 }
+
+                // Sort data by m/z
+                data.sort(function(a, b) {
+                    return a[0] - b[0];
+                });
+
+                console.log(data);
 
 
 
