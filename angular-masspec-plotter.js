@@ -1,5 +1,95 @@
+/**
+ * Created by sajjan on 7/21/14.
+ */
+'use strict';
+
 angular.module('angularMasspecPlotter', [])
     .directive("massSpec", function () {
+        /**
+         * Find the maximum intensity in the given range+
+         * @param data
+         * @param min
+         * @param max
+         * @returns {number}
+         */
+        var maxIntensityInRange = function(data, min, max) {
+            var maxLocalIntensity = 0;
+
+            for(var i = 0; i < data.length; i++) {
+                if(data[i][0] >= max)
+                    break;
+
+                else if(data[i][0] >= min && data[i][1] >= maxLocalIntensity)
+                    maxLocalIntensity = data[i][1];
+            }
+
+            return Math.max(maxLocalIntensity, 0.1);
+        };
+
+        /**
+         * Find the n ions with the highest intensity in the given range
+         * @param data
+         * @param plot
+         * @param n
+         * @returns {Array.<T>}
+         */
+        var getTopPeaks = function(data, plot, n) {
+            // Set default values if not given
+            n = typeof n !== 'undefined' ? n : 3;
+
+            // Get plot minimum and maximum
+            var min = plot.getXAxes()[0].options.min;
+            var max = plot.getXAxes()[0].options.max;
+
+            // Get data within range
+            var reducedData = [];
+
+            for(var i = 0; i < data.length; i++) {
+                if(min <= data[i][0] && data[i][0] <= max)
+                    reducedData.push(data[i]);
+            }
+
+            // Sort data
+            reducedData.sort(function(a, b) {
+                return b[1] - a[1];
+            });
+
+            // Return the top n hits
+            return reducedData.slice(0, n);
+        };
+
+        /**
+         * Add annotations for the top n ions
+         * @param data
+         * @param plot
+         * @param placeholder
+         * @param n
+         */
+        var plotAnnotations = function(data, plot, placeholder, n) {
+            // Get peaks
+            var peaks = getTopPeaks(data, plot, n);
+
+            // Remove all annotation elements
+            $(".masspec-annotation").remove();
+
+            // Add annotations
+            for(var i = 0; i < peaks.length; i++) {
+                var p = plot.pointOffset({x: peaks[i][0], y: peaks[i][1]});
+
+                // Place annotation and then reposition to center on ion
+                var annotation = $('<div class="masspec-annotation">'+ peaks[i][0] +"</div>").css({
+                    'position': 'absolute',
+                    'top': p.top - 12,
+                    'font-size': 'x-small',
+                    'color': '#f00',
+                    'text-align': 'center'
+                });
+                annotation.appendTo(placeholder);
+                annotation.css({ 'left': p.left - annotation.width() / 2 });
+            }
+        };
+
+
         return {
             restrict: 'E',
             require: 'ngModel',
@@ -12,89 +102,10 @@ angular.module('angularMasspecPlotter', [])
             replace: 'true',
             template:
                 '<div style="width: 100%; height: 100%; display: inline-block;">'+
-                '<div class="masspec" style="width: 100%; height: 100%"></div>'+
-                // Unable to plot multiple mass specs with different states due to scope issues
-                //'<div ng-bind="masspecLabel" style="text-align: center; font-style: oblique;"></div>'+
+                '    <div class="masspec" style="width: 100%; height: 100%"></div>'+
                 '</div>',
 
             link: function (scope, element, attrs) {
-                /**
-                 * Find the maximum intensity in the given range
-                 */
-                function maxIntensityInRange(min, max) {
-                    var maxLocalIntensity = 0;
-
-                    for(var i = 0; i < data.length; i++) {
-                        if(data[i][0] >= max)
-                            break;
-
-                        else if(data[i][0] >= min && data[i][1] >= maxLocalIntensity) 
-                            maxLocalIntensity = data[i][1];
-                    }
-
-                    return Math.max(maxLocalIntensity, 10);
-                }
-
-                /**
-                 * Find the n ions with the highest intensity in the given range
-                 */
-                function getTopPeaks(data, n) {
-                    // Set default values if not given
-                    n = typeof n !== 'undefined' ? n : 3;
-
-                    // Get plot minimum and maximum
-                    var min = plot.getXAxes()[0].options.min;
-                    var max = plot.getXAxes()[0].options.max;
-
-                    // Get data within range
-                    reducedData = [];
-
-                    for(var i = 0; i < data.length; i++) {
-                        if(min <= data[i][0] && data[i][0] <= max)
-                            reducedData.push(data[i]);
-                    }
-
-                    // Sort data
-                    reducedData.sort(function(a, b) {
-                        return b[1] - a[1];
-                    });
-
-                    // Return the top n hits
-                    return reducedData.slice(0, n);
-                }
-
-                /**
-                 * Add annotations for the top n ions
-                 */
-                function plotAnnotations(data, n) {
-                    // Get peaks
-                    var peaks = getTopPeaks(data, n);
-
-                    // Remove all annotation elements
-                    $(".masspec-annotation").remove();
-
-                    // Add annotations
-                    for(var i = 0; i < peaks.length; i++) {
-                        var p = plot.pointOffset({x: peaks[i][0], y: peaks[i][1]});
-
-                        // Place annotation and then reposition to center on ion
-                        var annotation = $('<div class="masspec-annotation">'+ peaks[i][0] +"</div>").css({
-                            'position': 'absolute',
-                            'top': p.top - 12,
-                            'font-size': 'x-small',
-                            'color': '#f00',
-                            'text-align': 'center'
-                        });
-                        annotation.appendTo(placeholder);
-                        annotation.css({
-                            'left': p.left - annotation.width() / 2
-                        });
-
-                    }
-                }
-
-
-
                 // Retrieve the data
                 var data = scope.bindModel;
 
@@ -111,14 +122,13 @@ angular.module('angularMasspecPlotter', [])
                 });
 
 
-
                 // Compute plot limits
                 var mzMax = Math.max.apply(Math, data.map(function(x) { return x[0]; }));
                 var intensityMax = Math.max.apply(Math, data.map(function(x) { return x[1]; }));
 
 
                 // Type of plot
-                var miniPlot = ('mini' in attrs)
+                var miniPlot = attrs.hasOwnProperty('mini');
 
 
                 // Base options
@@ -139,22 +149,15 @@ angular.module('angularMasspecPlotter', [])
                         borderColor: null
                     },
 
-                    xaxis: { min: 0, max: Math.max(mzMax, 1000) },
-                    yaxis: { min: 0, max: 1.15 * intensityMax },
-
-                    legend: {show: false}
+                    legend: { show: false }
                 };
-
 
 
                 // Format plot if a thumbnail version is desired
                 if(miniPlot) {
-                    // Remove tick labels, redefine axis maxima
-                    options.xaxis.ticks = false;
-                    options.yaxis.ticks = false;
-
-                    options.xaxis.max = 1000;
-                    options.yaxis.max = intensityMax;
+                    // Remove tick labels and set plot limits
+                    options.xaxis = { ticks: false };
+                    options.yaxis = { min: 0, max: intensityMax, ticks: false };
 
                     // Filter low intensity peaks
                     data = data.filter(function(x) { return x[1] > 0.05 * intensityMax });
@@ -162,36 +165,39 @@ angular.module('angularMasspecPlotter', [])
 
                 // Otherwise, set up plot selection zoom and tooltips
                 else {
-                    options.selection = {
-                        mode: 'x'
-                    };
+                    // Set up plot limits
+                    options.xaxis = { min: 0, max: Math.max(mzMax, 1000) };
+                    options.yaxis = { min: 0, max: 1.15 * intensityMax };
 
+                    // Set plot selection mode
+                    options.selection = { mode: 'x' };
+
+                    // Set hoverable plot properties
                     options.grid.hoverable = true;
                     options.grid.mouseActiveRadius = 10;
                 }
 
 
-
                 // Find placeholder element and plot the mass spectrum
                 var plotData = [];
 
-                for(var i = 0; i < data.length; i++)
-                    plotData.push({ data: [[data[i][0], 0], data[i]], lines: { show: true } });
+                for(var i = 0; i < data.length; i++) {
+                    plotData.push({data: [[data[i][0], 0], data[i]], lines: {show: true}});
+                }
 
                 var placeholder = $(element).find(".masspec");
                 var plot = $.plot(placeholder, plotData, options);
 
 
-
                 // Set up interactivity if this is a full plot
                 if(!miniPlot) {
                     // Plot annotations
-                    plotAnnotations(data);
+                    plotAnnotations(data, plot, placeholder);
 
                     // Define selection zoom functionality
                     placeholder.bind('plotselected', function(event, range) {
                         // Get maximum intensity in given range
-                        var maxLocalIntensity = maxIntensityInRange(range.xaxis.from, range.xaxis.to);
+                        var maxLocalIntensity = maxIntensityInRange(data, range.xaxis.from, range.xaxis.to);
 
                         // Set x-axis range
                         $.each(plot.getXAxes(), function(_, axis) {
@@ -209,7 +215,7 @@ angular.module('angularMasspecPlotter', [])
                         plot.setupGrid();
                         plot.draw();
                         plot.clearSelection();
-                        plotAnnotations(data);
+                        plotAnnotations(data, plot, placeholder);
                     });
 
                     // Add button to reset selection zooming
@@ -241,12 +247,13 @@ angular.module('angularMasspecPlotter', [])
                         plot.setupGrid();
                         plot.draw();
                         plot.clearSelection();
-                        plotAnnotations(data);
+                        plotAnnotations(data, plot, placeholder);
                     });
+
 
                     // Define functionality for plot hover / tooltips
                     placeholder.bind('plothover', function (event, pos, item) {
-                        function showTooltip(contents) {
+                        var showTooltip = function (contents) {
                             $('canvas').css('cursor', 'pointer');
 
                             var p = plot.pointOffset({x: pos.x, y: pos.y});
@@ -263,7 +270,7 @@ angular.module('angularMasspecPlotter', [])
                                 'border': '1px solid #111',
                                 'white-space': 'nowrap'
                             }).appendTo(placeholder);
-                        }
+                        };
 
 
                         // Remove current tooltip and highlight
@@ -281,7 +288,7 @@ angular.module('angularMasspecPlotter', [])
                             // Find nearest ion
                             var nearestIon = {
                                 dist: -1
-                            }
+                            };
 
                             var cursor = plot.pointOffset({x: pos.x, y: pos.y});
 
@@ -304,7 +311,7 @@ angular.module('angularMasspecPlotter', [])
 
                     // Replot annotations when window is resized
                     placeholder.resize(function() {
-                        plotAnnotations(data);
+                        plotAnnotations(data, plot, placeholder);
                     });
                 }
             }
