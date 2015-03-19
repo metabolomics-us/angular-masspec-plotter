@@ -167,7 +167,7 @@ angular.module('angularMasspecPlotter', [])
                 else {
                     // Set up plot limits
                     options.xaxis = { min: 0, max: Math.max(mzMax, 1000) };
-                    options.yaxis = { min: 0, max: 1.15 * intensityMax };
+                    options.yaxis = { min: 0, max: intensityMax };
 
                     // Set plot selection mode
                     options.selection = { mode: 'x' };
