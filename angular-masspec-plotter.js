@@ -90,6 +90,52 @@ angular.module('angularMasspecPlotter', [])
         };
 
 
+        /**
+         * Parse data into a plottable format
+         * @param data
+         */
+        var parseData = function(data) {
+            var reducedData = [];
+            var annotations = [];
+
+            // Parse data if it is in the standard string format
+            if(angular.isString(data)) {
+                reducedData = data.split(' ').map(function(x) {
+                    return x.split(':').map(Number);
+                });
+            }
+
+            // Reduce the object-form of the mass spectrum
+            else if(angular.isArray(data) && data.length > 0 && angular.isObject(data[0])) {
+                reducedData = [];
+
+                for (var i = 0; i < data.length; i++) {
+                    reducedData.push([data[i].ion, data[i].intensity]);
+
+                    if (data[i].annotation && data[i].annotation != '') {
+                        annotations.push([data[i].ion, data[i].annotation]);
+                    }
+                }
+            }
+
+            // Check that the data is in a readable form already
+            else if(angular.isArray(data) && data.length > 0 && angular.isArray(data[0])) {
+                reducedData = data;
+            }
+
+            // Sort data by m/z
+            reducedData.sort(function(a, b) {
+                return a[0] - b[0];
+            });
+
+            // Return parsed data
+            return {
+                data: reducedData,
+                annotations: annotations
+            };
+        };
+
+
         return {
             restrict: 'E',
             require: 'ngModel',
@@ -106,20 +152,12 @@ angular.module('angularMasspecPlotter', [])
                 '</div>',
 
             link: function (scope, element, attrs) {
-                // Retrieve the data
-                var data = scope.bindModel;
+                // Retrieve and parse the data
+                var modelData = scope.bindModel;
 
-                // Parse data if it is in the standard string format
-                if(typeof data === 'string') {
-                    data = data.split(' ').map(function(x) {
-                        return x.split(':').map(Number);
-                    });
-                }
-
-                // Sort data by m/z
-                data.sort(function(a, b) {
-                    return a[0] - b[0];
-                });
+                var parsedData = parseData(modelData);
+                var data = parsedData.data;
+                var annotations = parsedData.annotations;
 
 
                 // Compute plot limits
