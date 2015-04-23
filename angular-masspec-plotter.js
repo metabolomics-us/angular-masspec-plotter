@@ -131,6 +131,11 @@ angular.module('angularMasspecPlotter', [])
                 });
             }
 
+            // Check that the data is in a readable form already
+            else if(angular.isArray(data) && data.length > 0 && angular.isArray(data[0])) {
+                reducedData = data;
+            }
+
             // Reduce the object-form of the mass spectrum
             else if(angular.isArray(data) && data.length > 0 && angular.isObject(data[0])) {
                 reducedData = [];
@@ -142,11 +147,6 @@ angular.module('angularMasspecPlotter', [])
                         annotations.push([data[i].ion, data[i].annotation]);
                     }
                 }
-            }
-
-            // Check that the data is in a readable form already
-            else if(angular.isArray(data) && data.length > 0 && angular.isArray(data[0])) {
-                reducedData = data;
             }
 
             // Sort data by m/z
