@@ -246,6 +246,8 @@ angular.module('angularMasspecPlotter', [])
                 var placeholder = $(element).find(".masspec");
                 var plot = $.plot(placeholder, plotData, options);
 
+
+                // Watch the data source for changes
                 scope.$watch(attrs.ngModel, function(v) {
                     if (angular.isDefined(v)) {
                         parsedData = parseData(v);
@@ -306,7 +308,7 @@ angular.module('angularMasspecPlotter', [])
                         'padding': '2px'
                     }).appendTo(placeholder).click(function (event) {
                         event.preventDefault();
-                        redrawPlot(data, plot, placeholder);
+                        redrawPlot(data, plot, placeholder, true);
                     });
 
 
