@@ -89,6 +89,32 @@ angular.module('angularMasspecPlotter', [])
             }
         };
 
+        var redrawPlot = function(data, plot, placeholder, showAnnotations) {
+            var mzMax = Math.max.apply(Math, data.map(function(x) { return x[0]; }));
+            var intensityMax = Math.max.apply(Math, data.map(function(x) { return x[1]; }));
+
+            // Reset x-axis range
+            $.each(plot.getXAxes(), function(_, axis) {
+                axis.options.min = 0;
+                axis.options.max = Math.max(mzMax, 1000);
+            });
+
+            // Reset y-axis range
+            $.each(plot.getYAxes(), function(_, axis) {
+                axis.options.min = 0;
+                axis.options.max = intensityMax;
+            });
+
+            // Redraw plot
+            plot.setupGrid();
+            plot.draw();
+            plot.clearSelection();
+
+            if(showAnnotations) {
+                plotAnnotations(data, plot, placeholder);
+            }
+        };
+
 
         /**
          * Parse data into a plottable format
@@ -139,10 +165,6 @@ angular.module('angularMasspecPlotter', [])
         return {
             restrict: 'E',
             require: 'ngModel',
-            scope:{
-                bindModel: '=ngModel'
-            },
-
             priority: 1,
 
             replace: 'true',
@@ -153,9 +175,7 @@ angular.module('angularMasspecPlotter', [])
 
             link: function (scope, element, attrs) {
                 // Retrieve and parse the data
-                var modelData = scope.bindModel;
-
-                var parsedData = parseData(modelData);
+                var parsedData = parseData(scope[attrs.ngModel]);
                 var data = parsedData.data;
                 var annotations = parsedData.annotations;
 
@@ -226,6 +246,24 @@ angular.module('angularMasspecPlotter', [])
                 var placeholder = $(element).find(".masspec");
                 var plot = $.plot(placeholder, plotData, options);
 
+                scope.$watch(attrs.ngModel, function(v) {
+                    if (angular.isDefined(v)) {
+                        parsedData = parseData(v);
+
+                        data = parsedData.data;
+                        annotations = parsedData.annotations;
+
+                        var plotData = [];
+
+                        for (var i = 0; i < data.length; i++) {
+                            plotData.push({data: [[data[i][0], 0], data[i]], lines: {show: true}});
+                        }
+
+                        plot.setData(plotData);
+                        redrawPlot(data, plot, placeholder, !miniPlot);
+                    }
+                });
+
 
                 // Set up interactivity if this is a full plot
                 if(!miniPlot) {
@@ -268,24 +306,7 @@ angular.module('angularMasspecPlotter', [])
                         'padding': '2px'
                     }).appendTo(placeholder).click(function (event) {
                         event.preventDefault();
-
-                        // Reset x-axis range
-                        $.each(plot.getXAxes(), function(_, axis) {
-                            axis.options.min = 0;
-                            axis.options.max = Math.max(mzMax, 1000);
-                        });
-
-                        // Reset y-axis range
-                        $.each(plot.getYAxes(), function(_, axis) {
-                            axis.options.min = 0;
-                            axis.options.max = 1.15 * intensityMax;
-                        });
-
-                        // Redraw plot
-                        plot.setupGrid();
-                        plot.draw();
-                        plot.clearSelection();
-                        plotAnnotations(data, plot, placeholder);
+                        redrawPlot(data, plot, placeholder);
                     });
 
 
