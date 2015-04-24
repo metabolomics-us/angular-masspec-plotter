@@ -141,10 +141,12 @@ angular.module('angularMasspecPlotter', [])
                 reducedData = [];
 
                 for (var i = 0; i < data.length; i++) {
-                    reducedData.push([data[i].ion, data[i].intensity]);
+                    if (angular.isUndefined(data[i].selected) || data[i].selected === true) {
+                        reducedData.push([data[i].ion, data[i].intensity]);
 
-                    if (data[i].annotation && data[i].annotation != '') {
-                        annotations.push([data[i].ion, data[i].annotation]);
+                        if (data[i].annotation && data[i].annotation != '') {
+                            annotations.push([data[i].ion, data[i].annotation]);
+                        }
                     }
                 }
             }
@@ -264,7 +266,7 @@ angular.module('angularMasspecPlotter', [])
                         plot.setData(plotData);
                         redrawPlot(data, plot, placeholder, !miniPlot);
                     }
-                });
+                }, true);
 
 
                 // Set up interactivity if this is a full plot
