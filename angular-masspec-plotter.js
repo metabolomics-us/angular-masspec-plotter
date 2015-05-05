@@ -151,6 +151,14 @@ angular.module('angularMasspecPlotter', [])
                 }
             }
 
+            if(reducedData.length > 1000) {
+                reducedData.sort(function(a, b) {
+                    return b[1] - a[1];
+                });
+
+                reducedData = reducedData.slice(0, 1000);
+            }
+
             // Sort data by m/z
             reducedData.sort(function(a, b) {
                 return a[0] - b[0];
