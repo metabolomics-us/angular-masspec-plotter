@@ -307,14 +307,14 @@ angular.module('angularMasspecPlotter', [])
                     });
 
                     // Add button to reset selection zooming
-                    $('<div class="button">Reset Zoom</div>').css({
+                    $('<div><i class="fa fa-arrows-alt fa-2x"></i></div>').css({
                         'position': 'absolute',
                         'top': '10px',
                         'right': '10px',
                         'cursor': 'pointer',
                         'font-size': 'smaller',
-                        'color': '#999',
-                        'background-color': '#eee',
+                        'color': '#000',
+                        //'background-color': '#eee',
                         'padding': '2px'
                     }).appendTo(placeholder).click(function (event) {
                         event.preventDefault();
