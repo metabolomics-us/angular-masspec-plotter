@@ -51,7 +51,7 @@
 		var options = {
 			series: {
 				color: '#00f',
-				lines: {show: true},
+				lines: {show: true, lineWidth:.5},
 				shadowSize: 0
 			},
 
@@ -100,7 +100,7 @@
 		var plotData = [];
 
 		for (var i = 0; i < data.length; i++) {
-			plotData.push({data: [[data[i][0], 0], data[i]], lines: {show: true}});
+			plotData.push({data: [[data[i][0], 0], data[i]], lines: {show: true, lineWidth: .5}});
 		}
 
 		var placeholder = $(element).find(".masspec");
@@ -118,7 +118,7 @@
 				var plotData = [];
 
 				for (var i = 0; i < data.length; i++) {
-					plotData.push({data: [[data[i][0], 0], data[i]], lines: {show: true}});
+					plotData.push({data: [[data[i][0], 0], data[i]], lines: {show: true, lineWidth:.5}});
 				}
 
 				plot.setData(plotData);
