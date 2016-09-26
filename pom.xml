@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+    </parent>
+    
+    <packaging>jar</packaging>
+    <groupId>org.webjars</groupId>
+    <artifactId>angular-masspec-plotter</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <name>angular-masspec-plotter</name>
+    <description>WebJar for WEBJAR_NAME</description>
+    <url>http://webjars.org</url>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <upstream.url>UPSTREAM_ZIP_URL</upstream.url>
+	<upstream.version>1.5.8</upstream.version>
+        <destDir>${project.build.outputDirectory}/META-INF/resources/webjars/${project.artifactId}/${upstream.version}</destDir>
+        <requirejs>
+            {
+                "paths": {
+                    "WEBJAR_ID": "MAIN_JS"
+                },
+                "shim": {
+                    "WEBJAR_ID": ["DEP_ID"]
+                }
+            }
+        </requirejs>
+    </properties>
+
+    <developers>
+        <developer>
+            <id>berlinguyinca</id>
+            <name>Gert Wohlgemuth</name>
+            <email>wohlgemuth@ucdavis.edu</email>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>lgpl-3.0</name>
+            <url>https://www.gnu.org/licenses/lgpl-3.0.en.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://bitbucket.org/fiehnlab/angular-masspec-plotter</url>
+        <connection>scm:git:https://bitbucket.org/fiehnlab/angular-masspec-plotter.git</connection>
+        <developerConnection>scm:git:https://bitbucket.org/fiehnlab/angular-masspec-plotter.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+    
+    <dependencies>
+	<dependency>
+	    <groupId>org.webjars</groupId>
+	    <artifactId>angularjs</artifactId>
+	    <version>${upstream.version}</version>
+	</dependency>
+
+	<dependency>
+	    <groupId>org.webjars.bower</groupId>
+	    <artifactId>angular-sanitize</artifactId>
+	    <version>${upstream.version}</version>
+	</dependency>
+
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>flot</artifactId>
+            <version>0.8.3-1</version>
+        </dependency>
+    </dependencies>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.jamesward</groupId>
+                <artifactId>unsnapshot-maven-plugin</artifactId>
+                <version>0.2</version>
+                <executions>
+                    <execution>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>unsnapshot</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <phase>process-resources</phase>
+                        <goals><goal>run</goal></goals>
+                        <configuration>
+                            <target>
+				<copy todir="${destDir}" file="angular-masspec-plotter.js" />
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>sonatype-nexus-staging</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
