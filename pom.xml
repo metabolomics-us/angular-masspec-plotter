@@ -75,6 +75,19 @@
             <version>0.8.3-1</version>
         </dependency>
     </dependencies>
+
+    <distributionManagement>
+        <repository>
+            <id>releases</id>
+            <name>Fiehnlab Releases</name>
+            <url>http://gose.fiehnlab.ucdavis.edu:55000/content/repositories/releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>Fiehnlab Snapshots</name>
+            <url>http://gose.fiehnlab.ucdavis.edu:55000/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
     
     <build>
         <plugins>
