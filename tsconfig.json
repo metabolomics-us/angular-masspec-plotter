@@ -1,0 +1,30 @@
+{
+  //"compilerOptions": {
+  //  "module": "commonjs",
+  //  "types": ["angular", "angular-mocks", "jasmine"],
+  //  "allowJs": true,
+  //  "esModuleInterop": true,
+  //  "experimentalDecorators": true,
+  //  "lib": ["es5", "dom", "es2015"],
+  //  "noImplicitAny": false,
+  //  "preserveConstEnums": true,
+  //  "removeComments": false,
+  //}
+
+  "compilerOptions": {
+    "baseUrl": "",
+    "declaration": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "lib": ["es2015", "dom"],
+    "mapRoot": "./",
+    "module": "commonjs",
+    "moduleResolution": "Node",
+    "skipLibCheck": true,
+    "target": "es5",
+    "types": ["node", "jquery"],
+    "typeRoots": [
+      "../node_modules/@types"
+    ]
+  }
+}

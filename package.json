@@ -3,8 +3,22 @@
     "version": "0.0.2",
     "authors": [
         "Sajjan Mehta <sajjan.s.mehta@gmail.com>",
-        "Gert Wohlgemuth <berlinguy@gmail.com>"
+        "Gert Wohlgemuth <berlinguy@gmail.com>",
+        "Nolan Guzman <nolanguzman97@gmail.com>"
     ],
+    "dependencies": {
+        "angular": "^1.6.10",
+        "angular-ui-bootstrap": "^2.5.6",
+        "components-font-awesome": "~4.7.0",
+        "flot": "4.2.2",
+        "jquery": "^3.2.1"
+    },
+    "devDependencies": {
+        "@types/jquery": "^3.5.5",
+        "@types/node": "^15.0.1",
+        "ts-node": "^10.0.0",
+        "typescript": "^4.3.2"
+    },
     "description": "This is a mass spectrum plotter for AngularJS using Flot",
     "main": "angular-masspec-plotter.js",
     "keywords": [

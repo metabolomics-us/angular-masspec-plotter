@@ -22,15 +22,16 @@
     </div>
 
 
-    <script src="bower_components/angular/angular.min.js"></script>
-    <script src="bower_components/jquery/dist/jquery.min.js"></script>
-    <script src="bower_components/flot/jquery.flot.js"></script>
-    <script src="bower_components/flot/jquery.flot.resize.js"></script>
-    <script src="bower_components/flot/jquery.flot.selection.js"></script>
-    <script src="angular-masspec-plotter.js"></script>
+    <script src="node_modules/angular/angular.js"></script>
+    <script src="node_modules/jquery/dist/jquery.js"></script>
+    <script src="node_modules/flot/dist/es5/jquery.flot.js"></script>
+    <script src="node_modules/flot/source/jquery.flot.resize.js"></script>
+    <script src="node_modules/flot/source/jquery.flot.selection.js"></script>
+    <script type="module" src="angular-masspec-plotter.js"></script>
 
     <script type="text/javascript">
         //<![CDATA[
+
 
         angular.module('app', ['angularMasspecPlotter'])
                 .controller('PlotController', function ($scope) {
