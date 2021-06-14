@@ -24,7 +24,7 @@
         "typescript": "^4.3.2"
     },
     "description": "This is a mass spectrum plotter for AngularJS using Flot",
-    "main": "./lib/cjs/angular-masspec-plotter.js",
+    "main": "./lib/angular-masspec-plotter.js",
     "files": [
         "lib/"
     ],

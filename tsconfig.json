@@ -20,7 +20,7 @@
     "module": "commonjs",
     "moduleResolution": "Node",
     "skipLibCheck": true,
-    "target": "es5",
+    "target": "es6",
     "types": ["node", "jquery"],
     "typeRoots": [
       "./node_modules/@types"
