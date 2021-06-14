@@ -247,7 +247,7 @@ class AngularMasspecPlotterController{
 	 * @returns {number}
 	 */
 
-	maxIntensityInRange = (data, min, max) => {
+	maxIntensityInRange(data, min, max) {
 		let maxLocalIntensity = 0;
 
 		for (let i = 0; i < data.length; i++) {
@@ -268,7 +268,7 @@ class AngularMasspecPlotterController{
 	 * @param n
 	 * @returns {Array.<T>}
 	 */
-	getTopPeaks = (data, plot, n) => {
+	getTopPeaks(data, plot, n){
 		// Set default values if not given
 		n = typeof n !== 'undefined' ? n : 3;
 
@@ -300,7 +300,7 @@ class AngularMasspecPlotterController{
 	 * @param placeholder
 	 * @param n
 	 */
-	plotAnnotations = (data, plot, placeholder, n) =>{
+	plotAnnotations(data, plot, placeholder, n){
 		// Get peaks
 		let peaks = this.getTopPeaks(data, plot, n);
 
@@ -324,7 +324,7 @@ class AngularMasspecPlotterController{
 		}
 	}
 
-	redrawPlot = (data, plot, placeholder, showAnnotations) => {
+	redrawPlot(data, plot, placeholder, showAnnotations){
 		let mzMax = Math.max.apply(Math, data.map((x) => {
 			return x[0];
 		}));
@@ -359,7 +359,7 @@ class AngularMasspecPlotterController{
 	 * Parse data into a plottable format
 	 * @param data
 	 */
-	parseData = (data) => {
+	parseData(data){
 		let reducedData = [];
 		let annotations = [];
 
