@@ -2,13 +2,13 @@
  * Created by sajjan on 7/21/14.
  */
 import * as angular from 'angular';
-import * as $ from 'flot';
+import * as $ from 'jquery';
+import 'flot';
 
 export default class AngularMasspecPlotter{
 	constructor() {
 		return {
 			restrict: 'E',
-			require: 'ngModel',
 			priority: 1,
 			replace: 'true',
 			template: '<div style="width: 100%; height: 100%; display: inline-block;">' +
@@ -146,7 +146,7 @@ export default class AngularMasspecPlotter{
 						// Redraw plot
 						plot.setupGrid();
 						plot.draw();
-						plot.clearSelection();
+						//plot.clearSelection();
 						$ctrl.plotAnnotations(data, plot, placeholder);
 					});
 

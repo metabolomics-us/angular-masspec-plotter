@@ -21,7 +21,7 @@
     "moduleResolution": "Node",
     "skipLibCheck": true,
     "target": "es6",
-    "types": ["node", "jquery"],
+    "types": ["node", "jquery", "flot"],
     "typeRoots": [
       "./node_modules/@types"
     ],
