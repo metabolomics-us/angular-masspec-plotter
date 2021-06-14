@@ -13,11 +13,10 @@
 
   "compilerOptions": {
     "baseUrl": "",
-    "declaration": false,
+    "declaration": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "lib": ["es2015", "dom"],
-    "mapRoot": "./",
     "module": "commonjs",
     "moduleResolution": "Node",
     "skipLibCheck": true,
@@ -25,6 +24,10 @@
     "types": ["node", "jquery"],
     "typeRoots": [
       "./node_modules/@types"
-    ]
-  }
+    ],
+    "outDir": "./lib"
+  },
+  "include": [
+    "./angular-masspec-plotter.ts"
+  ]
 }
