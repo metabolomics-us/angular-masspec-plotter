@@ -237,7 +237,11 @@ export default class AngularMasspecPlotter{
 }
 
 class AngularMasspecPlotterController{
-	constructor() {}
+	private static $inject = ['$scope'];
+	private $scope;
+	constructor($scope) {
+		this.$scope = $scope;
+	}
 
 	/**
 	 * Find the maximum intensity in the given range+
