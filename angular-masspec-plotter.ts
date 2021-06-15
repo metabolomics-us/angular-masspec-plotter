@@ -5,20 +5,19 @@ import * as angular from 'angular';
 import * as $ from 'jquery';
 import 'flot';
 
-export default class AngularMasspecPlotter{
+export default class AngularMasspecPlotter {
 	constructor() {
 		return {
 			restrict: 'E',
+			require: 'ngModel',
 			priority: 1,
 			replace: 'true',
-			template: '<div style="width: 100%; height: 100%; display: inline-block;">' +
+			template: '<div style="width: 400px; height: 600px; display: inline-block;">' +
 				'    <div class="masspec" style="width: 100%; height: 100%"></div>' +
 				'</div>',
-			controller: AngularMasspecPlotterController,
-			controllerAs: '$ctrl',
-			link: (scope, element, attrs, $ctrl) => {
+			link: (scope, element, attrs) => {
 				// Retrieve and parse the data
-				let parsedData = $ctrl.parseData(scope[attrs.ngModel]);
+				let parsedData = parseData(scope[attrs.ngModel]);
 				let data = parsedData.data;
 				let annotations = parsedData.annotations;
 
@@ -104,7 +103,7 @@ export default class AngularMasspecPlotter{
 				// Watch the data source for changes
 				scope.$watch(attrs.ngModel, (v) => {
 					if (angular.isDefined(v)) {
-						parsedData = $ctrl.parseData(v);
+						parsedData = parseData(v);
 
 						data = parsedData.data;
 						annotations = parsedData.annotations;
@@ -116,7 +115,7 @@ export default class AngularMasspecPlotter{
 						}
 
 						plot.setData(plotData);
-						$ctrl.redrawPlot(data, plot, placeholder, !miniPlot);
+						redrawPlot(data, plot, placeholder, !miniPlot);
 					}
 				}, true);
 
@@ -124,12 +123,12 @@ export default class AngularMasspecPlotter{
 				// Set up interactivity if this is a full plot
 				if (!miniPlot) {
 					// Plot annotations
-					$ctrl.plotAnnotations(data, plot, placeholder);
+					plotAnnotations(data, plot, placeholder, null);
 
 					// Define selection zoom functionality
 					placeholder.bind('plotselected', (event, range) => {
 						// Get maximum intensity in given range
-						let maxLocalIntensity = $ctrl.maxIntensityInRange(data, range.xaxis.from, range.xaxis.to);
+						let maxLocalIntensity = maxIntensityInRange(data, range.xaxis.from, range.xaxis.to);
 
 						// Set x-axis range
 						$.each(plot.getXAxes(), (_, axis) => {
@@ -147,7 +146,7 @@ export default class AngularMasspecPlotter{
 						plot.setupGrid();
 						plot.draw();
 						//plot.clearSelection();
-						$ctrl.plotAnnotations(data, plot, placeholder);
+						plotAnnotations(data, plot, placeholder, null);
 					});
 
 					// Add button to reset selection zooming
@@ -162,7 +161,7 @@ export default class AngularMasspecPlotter{
 						'padding': '2px'
 					}).appendTo(placeholder).click((event) => {
 						event.preventDefault();
-						$ctrl.redrawPlot(data, plot, placeholder, true);
+						redrawPlot(data, plot, placeholder, true);
 					});
 
 
@@ -228,191 +227,186 @@ export default class AngularMasspecPlotter{
 
 					// Replot annotations when window is resized
 					placeholder.resize(() => {
-						$ctrl.plotAnnotations(data, plot, placeholder);
+						plotAnnotations(data, plot, placeholder, null);
 					});
 				}
-			}
-		}
-	}
-}
 
-class AngularMasspecPlotterController{
-	private static $inject = ['$scope'];
-	private $scope;
-	constructor($scope) {
-		this.$scope = $scope;
-	}
+				/**
+				 * Find the maximum intensity in the given range+
+				 * @param data
+				 * @param min
+				 * @param max
+				 * @returns {number}
+				 */
 
-	/**
-	 * Find the maximum intensity in the given range+
-	 * @param data
-	 * @param min
-	 * @param max
-	 * @returns {number}
-	 */
+				function maxIntensityInRange(data, min, max)
+				{
+					let maxLocalIntensity = 0;
 
-	maxIntensityInRange(data, min, max) {
-		let maxLocalIntensity = 0;
+					for (let i = 0; i < data.length; i++) {
+						if (data[i][0] >= max)
+							break;
 
-		for (let i = 0; i < data.length; i++) {
-			if (data[i][0] >= max)
-				break;
-
-			else if (data[i][0] >= min && data[i][1] >= maxLocalIntensity)
-				maxLocalIntensity = data[i][1];
-		}
-
-		return Math.max(maxLocalIntensity, 0.1);
-	}
-
-	/**
-	 * Find the n ions with the highest intensity in the given range
-	 * @param data
-	 * @param plot
-	 * @param n
-	 * @returns {Array.<T>}
-	 */
-	getTopPeaks(data, plot, n){
-		// Set default values if not given
-		n = typeof n !== 'undefined' ? n : 3;
-
-		// Get plot minimum and maximum
-		let min = plot.getXAxes()[0].options.min;
-		let max = plot.getXAxes()[0].options.max;
-
-		// Get data within range
-		let reducedData = [];
-
-		for (let i = 0; i < data.length; i++) {
-			if (min <= data[i][0] && data[i][0] <= max)
-				reducedData.push(data[i]);
-		}
-
-		// Sort data
-		reducedData.sort(function (a, b) {
-			return b[1] - a[1];
-		});
-
-		// Return the top n hits
-		return reducedData.slice(0, n);
-	}
-
-	/**
-	 * Add annotations for the top n ions
-	 * @param data
-	 * @param plot
-	 * @param placeholder
-	 * @param n
-	 */
-	plotAnnotations(data, plot, placeholder, n){
-		// Get peaks
-		let peaks = this.getTopPeaks(data, plot, n);
-
-		// Remove all annotation elements
-		$(".masspec-annotation").remove();
-
-		// Add annotations
-		for (let i = 0; i < peaks.length; i++) {
-			let p = plot.pointOffset({x: peaks[i][0], y: peaks[i][1]});
-
-			// Place annotation and then reposition to center on ion
-			let annotation = $('<div class="masspec-annotation">' + peaks[i][0] + "</div>").css({
-				'position': 'absolute',
-				'top': p.top - 12,
-				'font-size': 'x-small',
-				'color': '#f00',
-				'text-align': 'center'
-			});
-			annotation.appendTo(placeholder);
-			annotation.css({'left': p.left - annotation.width() / 2});
-		}
-	}
-
-	redrawPlot(data, plot, placeholder, showAnnotations){
-		let mzMax = Math.max.apply(Math, data.map((x) => {
-			return x[0];
-		}));
-		let intensityMax = Math.max.apply(Math, data.map((x) => {
-			return x[1];
-		}));
-
-		// Reset x-axis range
-		$.each(plot.getXAxes(), (_, axis) => {
-			axis.options.min = 0;
-			axis.options.max = Math.max(mzMax, 1000);
-		});
-
-		// Reset y-axis range
-		$.each(plot.getYAxes(), (_, axis) => {
-			axis.options.min = 0;
-			axis.options.max = intensityMax;
-		});
-
-		// Redraw plot
-		plot.setupGrid();
-		plot.draw();
-		plot.clearSelection();
-
-		if (showAnnotations) {
-			this.plotAnnotations(data, plot, placeholder, undefined);
-		}
-	}
-
-
-	/**
-	 * Parse data into a plottable format
-	 * @param data
-	 */
-	parseData(data){
-		let reducedData = [];
-		let annotations = [];
-
-		// Parse data if it is in the standard string format
-		if (angular.isString(data)) {
-			reducedData = data.split(' ').map((x) => {
-				return x.split(':').map(Number);
-			});
-		}
-
-		// Check that the data is in a readable form already
-		else if (angular.isArray(data) && data.length > 0 && angular.isArray(data[0])) {
-			reducedData = data;
-		}
-
-		// Reduce the object-form of the mass spectrum
-		else if (angular.isArray(data) && data.length > 0 && angular.isObject(data[0])) {
-			reducedData = [];
-
-			for (let i = 0; i < data.length; i++) {
-				if (angular.isUndefined(data[i].selected) || data[i].selected === true) {
-					reducedData.push([data[i].ion, data[i].intensity]);
-
-					if (data[i].annotation && data[i].annotation != '') {
-						annotations.push([data[i].ion, data[i].annotation]);
+						else if (data[i][0] >= min && data[i][1] >= maxLocalIntensity)
+							maxLocalIntensity = data[i][1];
 					}
+
+					return Math.max(maxLocalIntensity, 0.1);
+				}
+
+				/**
+				 * Find the n ions with the highest intensity in the given range
+				 * @param data
+				 * @param plot
+				 * @param n
+				 * @returns {Array.<T>}
+				 */
+				function getTopPeaks(data, plot, n)
+				{
+					// Set default values if not given
+					n = typeof n !== 'undefined' ? n : 3;
+
+					// Get plot minimum and maximum
+					let min = plot.getXAxes()[0].options.min;
+					let max = plot.getXAxes()[0].options.max;
+
+					// Get data within range
+					let reducedData = [];
+
+					for (let i = 0; i < data.length; i++) {
+						if (min <= data[i][0] && data[i][0] <= max)
+							reducedData.push(data[i]);
+					}
+
+					// Sort data
+					reducedData.sort(function (a, b) {
+						return b[1] - a[1];
+					});
+
+					// Return the top n hits
+					return reducedData.slice(0, n);
+				}
+
+				/**
+				 * Add annotations for the top n ions
+				 * @param data
+				 * @param plot
+				 * @param placeholder
+				 * @param n
+				 */
+				function plotAnnotations(data, plot, placeholder, n) {
+					// Get peaks
+					let peaks = this.getTopPeaks(data, plot, n);
+
+					// Remove all annotation elements
+					$(".masspec-annotation").remove();
+
+					// Add annotations
+					for (let i = 0; i < peaks.length; i++) {
+						let p = plot.pointOffset({x: peaks[i][0], y: peaks[i][1]});
+
+						// Place annotation and then reposition to center on ion
+						let annotation = $('<div class="masspec-annotation">' + peaks[i][0] + "</div>").css({
+							'position': 'absolute',
+							'top': p.top - 12,
+							'font-size': 'x-small',
+							'color': '#f00',
+							'text-align': 'center'
+						});
+						annotation.appendTo(placeholder);
+						annotation.css({'left': p.left - annotation.width() / 2});
+					}
+				}
+
+				function redrawPlot(data, plot, placeholder, showAnnotations) {
+					let mzMax = Math.max.apply(Math, data.map((x) => {
+						return x[0];
+					}));
+					let intensityMax = Math.max.apply(Math, data.map((x) => {
+						return x[1];
+					}));
+
+					// Reset x-axis range
+					$.each(plot.getXAxes(), (_, axis) => {
+						axis.options.min = 0;
+						axis.options.max = Math.max(mzMax, 1000);
+					});
+
+					// Reset y-axis range
+					$.each(plot.getYAxes(), (_, axis) => {
+						axis.options.min = 0;
+						axis.options.max = intensityMax;
+					});
+
+					// Redraw plot
+					plot.setupGrid();
+					plot.draw();
+					plot.clearSelection();
+
+					if (showAnnotations) {
+						this.plotAnnotations(data, plot, placeholder, undefined);
+					}
+				}
+
+
+				/**
+				 * Parse data into a plottable format
+				 * @param data
+				 */
+				function parseData(data) {
+					let reducedData = [];
+					let annotations = [];
+
+					// Parse data if it is in the standard string format
+					if (angular.isString(data)) {
+						reducedData = data.split(' ').map((x) => {
+							return x.split(':').map(Number);
+						});
+					}
+
+					// Check that the data is in a readable form already
+					else if (angular.isArray(data) && data.length > 0 && angular.isArray(data[0])) {
+						reducedData = data;
+					}
+
+					// Reduce the object-form of the mass spectrum
+					else if (angular.isArray(data) && data.length > 0 && angular.isObject(data[0])) {
+						reducedData = [];
+
+						for (let i = 0; i < data.length; i++) {
+							if (angular.isUndefined(data[i].selected) || data[i].selected === true) {
+								reducedData.push([data[i].ion, data[i].intensity]);
+
+								if (data[i].annotation && data[i].annotation != '') {
+									annotations.push([data[i].ion, data[i].annotation]);
+								}
+							}
+						}
+					}
+
+					if (reducedData.length > 1000) {
+						reducedData.sort(function (a, b) {
+							return b[1] - a[1];
+						});
+
+						reducedData = reducedData.slice(0, 1000);
+					}
+
+					// Sort data by m/z
+					reducedData.sort(function (a, b) {
+						return a[0] - b[0];
+					});
+
+					// Return parsed data
+					return {
+						data: reducedData,
+						annotations: annotations
+					};
 				}
 			}
 		}
-
-		if (reducedData.length > 1000) {
-			reducedData.sort(function (a, b) {
-				return b[1] - a[1];
-			});
-
-			reducedData = reducedData.slice(0, 1000);
-		}
-
-		// Sort data by m/z
-		reducedData.sort(function (a, b) {
-			return a[0] - b[0];
-		});
-
-		// Return parsed data
-		return {
-			data: reducedData,
-			annotations: annotations
-		};
 	}
 }
+
 angular.module('angularMasspecPlotter', [])
 	.directive("massSpec", AngularMasspecPlotter);
