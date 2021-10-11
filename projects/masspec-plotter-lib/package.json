@@ -1,0 +1,12 @@
+{
+  "name": "masspec-plotter-lib",
+  "version": "0.0.1",
+  "peerDependencies": {
+    "@angular/common": "^10.2.4",
+    "@angular/core": "^10.2.4",
+    "flot": "^0.8.3"
+  },
+  "dependencies": {
+    "tslib": "^2.0.0"
+  }
+}
